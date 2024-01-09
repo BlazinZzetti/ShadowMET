@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -171,6 +172,11 @@ namespace ShadowMET
             return metFile;
         }
 
+        private void SaveMetFile(MetFileInfo currentMetFile)
+        {
+            MessageBox.Show("Saving: " + currentMetFile.FileInfo.Name);
+        }
+        
         private void SetFolderButton_Click(object sender, EventArgs e)
         {
             using (var fbd = new FolderBrowserDialog())
@@ -220,7 +226,8 @@ namespace ShadowMET
             
             using (Graphics g = Graphics.FromImage(processedImage))
             {
-                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                g.PixelOffsetMode = PixelOffsetMode.Half;
                 g.DrawImage(originalImage, 0, 0, 512, 512);
             }
             
@@ -253,8 +260,17 @@ namespace ShadowMET
 
         private void EditCharButton_Click(object sender, EventArgs e)
         {
-            var editDialog = new MetCharEditForm();
+            var editDialog = new MetCharEditForm(CurrentMetPicture, CurrentMetFile.CharInfos[unicodeSelectionComboBox.SelectedIndex]);
+            editDialog.ConfirmEditEventHandler += EditConfirmAction;
             editDialog.ShowDialog();
+            editDialog.ConfirmEditEventHandler -= EditConfirmAction;
+        }
+
+        private void EditConfirmAction(object sender, MetCharEditForm.MetCharInfoEventArg e)
+        {
+            CurrentMetFile.CharInfos[unicodeSelectionComboBox.SelectedIndex] = e.MetCharInfo;
+            SaveMetFile(CurrentMetFile);
+            //Reload
         }
     }
 }
