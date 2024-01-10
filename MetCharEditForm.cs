@@ -68,12 +68,12 @@ namespace ShadowMET
                 //Two separate Loops to account for rectangular sizes.
                 for (int y = 0; y < editResolutionBase.Y; y++)
                 {
-                    g.DrawLine(new Pen(Color.FromArgb(128, Color.Magenta), 1), 0, y*editScale, editWindow.X, y*editScale);
+                    g.DrawLine(new Pen(Color.FromArgb(64, Color.Red), 1), 0, y*editScale, editWindow.X, y*editScale);
                 }
                 
                 for (int x = 0; x < editResolutionBase.X; x++)
                 {
-                    g.DrawLine(new Pen(Color.FromArgb(128, Color.Magenta), 1), x*editScale, 0, x*editScale, editWindow.Y);
+                    g.DrawLine(new Pen(Color.FromArgb(64, Color.Red), 1), x*editScale, 0, x*editScale, editWindow.Y);
                 }
             }
 

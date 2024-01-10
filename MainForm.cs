@@ -28,6 +28,13 @@ namespace ShadowMET
 
         private void ProcessFontFolderPath()
         {
+            AvailableMetsComboBox.Items.Clear();
+            AvailableMetsComboBox.ResetText();
+            unicodeSelectionComboBox.Items.Clear();
+            unicodeSelectionComboBox.ResetText();
+            EditCharButton.Enabled = false;
+            AddCharButton.Enabled = false;
+            
             MetFileInfos.Clear();
             if (!String.IsNullOrEmpty(FontFolderPath))
             {
@@ -174,7 +181,29 @@ namespace ShadowMET
 
         private void SaveMetFile(MetFileInfo currentMetFile)
         {
-            MessageBox.Show("Saving: " + currentMetFile.FileInfo.Name);
+            using (StreamWriter writer = new StreamWriter(currentMetFile.FileInfo.FullName))
+            {
+                writer.NewLine = "\n";
+                //File Header
+                writer.WriteLine("METRICS1");
+                writer.WriteLine(currentMetFile.ImageName);
+                writer.WriteLine(5);
+                
+                //Char Infos
+                foreach (var metCharInfo in currentMetFile.CharInfos)
+                {
+                    var unicodeIndexString = ((int)metCharInfo.UnicodeChar).ToString().PadLeft(5);
+                    var posXString = metCharInfo.PositionX.ToString().PadLeft(4); //Space for 3 digits + space
+                    var posYString = metCharInfo.PositionY.ToString().PadLeft(4); //Space for 3 digits + space
+                    var sizeXString = (metCharInfo.PositionX + metCharInfo.SizeX).ToString().PadLeft(4); //Space for 3 digits + space
+                    var sizeYString = (metCharInfo.PositionY + metCharInfo.SizeY).ToString().PadLeft(4); //Space for 3 digits + space
+                    
+                    writer.WriteLine(unicodeIndexString + posXString + posYString + sizeXString + sizeYString + " #" /*+Comment?*/);
+                }
+                //WriteLine to end file.
+                writer.WriteLine(); 
+            }
+            MessageBox.Show("Saved: " + currentMetFile.FileInfo.Name);
         }
         
         private void SetFolderButton_Click(object sender, EventArgs e)
@@ -211,10 +240,11 @@ namespace ShadowMET
                 }
                 
                 unicodeSelectionComboBox.Items.Clear();
+                unicodeSelectionComboBox.ResetText();
+                EditCharButton.Enabled = false;
                 foreach (var charInfo in CurrentMetFile.CharInfos)
                 {
                     unicodeSelectionComboBox.Enabled = true;
-                    EditCharButton.Enabled = true;
                     unicodeSelectionComboBox.Items.Add(charInfo.UnicodeChar);
                 }
             }
@@ -241,6 +271,7 @@ namespace ShadowMET
             if (unicodeSelectionComboBox.SelectedIndex > -1
                 && unicodeSelectionComboBox.SelectedIndex < unicodeSelectionComboBox.Items.Count)
             {
+                EditCharButton.Enabled = true;
                 var charData = CurrentMetFile.CharInfos[unicodeSelectionComboBox.SelectedIndex];
                 using (Graphics g = Graphics.FromImage(baseImage))
                 {
@@ -270,7 +301,7 @@ namespace ShadowMET
         {
             CurrentMetFile.CharInfos[unicodeSelectionComboBox.SelectedIndex] = e.MetCharInfo;
             SaveMetFile(CurrentMetFile);
-            //Reload
+            MetPictureBox.Image = ProcessMetImage(CurrentMetPicture);
         }
     }
 }
